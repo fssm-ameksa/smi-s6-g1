@@ -49,74 +49,36 @@
     </div>
 
     <script>
+      function requestFullscreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.mozRequestFullScreen) {
+                elem.mozRequestFullScreen();
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) {
+                elem.msRequestFullscreen();
+            }
+        }
+
         let totalTime = 20 * 60;
-            let interval;
-            let isExamStarted = false;  // New variable to track exam state
+        let interval;
 
-            function requestFullscreen() {
-                const elem = document.documentElement;
-                if (elem.requestFullscreen) {
-                    elem.requestFullscreen();
-                } else if (elem.mozRequestFullScreen) {
-                    elem.mozRequestFullScreen();
-                } else if (elem.webkitRequestFullscreen) {
-                    elem.webkitRequestFullscreen();
-                } else if (elem.msRequestFullscreen) {
-                    elem.msRequestFullscreen();
+        function startCountdown() {
+            const countdownElem = document.getElementById('countdown');
+            interval = setInterval(function () {
+                const minutes = Math.floor(totalTime / 60);
+                let seconds = totalTime % 60;
+                if (seconds < 10) seconds = "0" + seconds;
+                countdownElem.textContent = minutes + ":" + seconds;
+                totalTime--;
+                if (totalTime < 0) {
+                    clearInterval(interval);
+                    handleTimeUp();
                 }
-            }
-
-            // Add fullscreen change event listener
-            document.addEventListener('fullscreenchange', function () {
-                if (!document.fullscreenElement && isExamStarted) {
-                    handlePenalty();
-                }
-            });
-
-            function startCountdown() {
-                isExamStarted = true;
-                const countdownElem = document.getElementById('countdown');
-                interval = setInterval(function () {
-                    const minutes = Math.floor(totalTime / 60);
-                    let seconds = totalTime % 60;
-                    if (seconds < 10) seconds = "0" + seconds;
-                    countdownElem.textContent = minutes + ":" + seconds;
-
-                    // Add warning when time is running low (last 5 minutes)
-                    if (totalTime <= 300) {
-                        countdownElem.style.color = 'red';
-                        countdownElem.style.animation = 'blink 1s infinite';
-                    }
-
-                    totalTime--;
-                    if (totalTime < 0) {
-                        clearInterval(interval);
-                        handleTimeUp();
-                    }
-                }, 1000);
-            }
-
-            // Add this CSS to your existing styles
-              const style = document.createElement('style');
-                style.textContent = `
-            .timer {
-                font-size: 28px;
-                font-weight: bold;
-            }
-            .warning {
-                color: #ff6b6b;
-                animation: blink 1s infinite;
-            }
-            .critical {
-                color: #ff0000;
-                animation: blink 0.5s infinite;
-                font-size: 28px;
-            }
-            @keyframes blink {
-                50% { opacity: 0.5; }
-            }
-        `;
-                document.head.appendChild(style);
+            }, 1000);
+        }
 
         let penaltyApplied = false;
         document.addEventListener('visibilitychange', function () {
@@ -151,17 +113,15 @@
 
         function displayExam() {
             var htmlCode = '<iframe id="examFrame" class="iframe-container" src="https://docs.google.com/forms/d/e/1FAIpQLSc1KKx-ngclLkfnHl3ZOhPFcAcoprjJmWvfVMGHaSugKFPgBg/viewform?embedded=true"></iframe>';
-            //https://docs.google.com/forms/d/e/1FAIpQLSc1KKx-ngclLkfnHl3ZOhPFcAcoprjJmWvfVMGHaSugKFPgBg/viewform?usp=dialog
+
             var element = document.getElementById('formContainer');
             element.innerHTML = htmlCode;
         }
 
         btn = document.getElementById('fullscreenBtn');
-            btn.addEventListener("click", function () {
-                requestFullscreen();
-                displayExam();
-                startCountdown();
-            });
+        btn.addEventListener("click", requestFullscreen);
+        btn.addEventListener("click", displayExam);
+        btn.addEventListener("click", startCountdown);
     </script>
 </body>
 
